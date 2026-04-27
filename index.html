@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Revision with Mr. Plus!</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{font-family:'Nunito',sans-serif;min-height:100vh;overflow-x:hidden}
+body{
+  background:linear-gradient(170deg,#FFD54F 0%,#FFECB3 30%,#FFF8E1 50%,#FFECB3 70%,#FFD54F 100%);
+  display:flex;flex-direction:column;align-items:center;
+  padding:10px 8px 30px;position:relative;
+}
+
+/* ── DECORATIONS ── */
+.float-deco{position:fixed;pointer-events:none;opacity:0.12;font-size:clamp(28px,6vw,55px);z-index:0;animation:floatAround 18s ease-in-out infinite}
+@keyframes floatAround{0%,100%{transform:translateY(0) rotate(0deg)}25%{transform:translateY(-20px) rotate(8deg)}50%{transform:translateY(5px) rotate(-5deg)}75%{transform:translateY(-12px) rotate(3deg)}}
+
+/* ── PASSWORD ── */
+#passwordScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(170deg,#FFD54F 0%,#FFECB3 30%,#FFF8E1 50%,#FFECB3 70%,#FFD54F 100%);display:flex;align-items:center;justify-content:center;z-index:9999}
+.pw-card{background:rgba(255,255,255,0.97);border-radius:24px;padding:36px 28px;max-width:380px;width:90%;text-align:center;box-shadow:0 12px 40px rgba(255,179,0,0.3)}
+.pw-card h2{font-family:'Fredoka One',cursive;color:#E65100;font-size:22px;margin-bottom:6px}
+.pw-card p{font-weight:700;color:#5D4037;font-size:14px;margin-bottom:18px}
+.pw-input{width:80%;padding:14px;border:3px solid #FFB300;border-radius:14px;font-family:'Fredoka One',cursive;font-size:22px;text-align:center;color:#E65100;outline:none}
+.pw-input:focus{border-color:#FF6F00}
+.pw-btn{display:block;margin:16px auto 0;padding:12px 40px;border:none;border-radius:50px;font-family:'Fredoka One',cursive;font-size:18px;color:white;cursor:pointer;background:linear-gradient(135deg,#43A047,#66BB6A);box-shadow:0 4px 16px rgba(67,160,71,0.4);transition:transform 0.2s}
+.pw-btn:hover{transform:scale(1.05)}
+.pw-error{color:#E53935;font-weight:800;font-size:13px;margin-top:10px;min-height:20px}
+
+/* ── APP ── */
+#app{width:100%;max-width:700px;position:relative;z-index:1;display:none}
+
+/* ── HEADER ── */
+.header{background:linear-gradient(135deg,#FF8F00,#FFB300);border-radius:20px;padding:14px 20px;margin-bottom:14px;text-align:center;box-shadow:0 6px 28px rgba(255,143,0,0.4)}
+.header h1{font-family:'Fredoka One',cursive;font-size:clamp(16px,3.5vw,24px);color:#fff;text-shadow:2px 2px 4px rgba(0,0,0,0.15)}
+.header p{font-size:clamp(11px,2vw,14px);color:#FFF8E1;font-weight:700;margin-top:4px}
+
+/* ── PROGRESS ── */
+.progress-wrap{height:10px;background:rgba(255,255,255,0.5);border-radius:50px;margin:10px 0 14px;overflow:hidden}
+.progress-bar{height:100%;background:linear-gradient(90deg,#FF8F00,#43A047);border-radius:50px;transition:width 0.8s ease;width:0%}
+
+/* ── SPEECH BUBBLE ── */
+.speech-area{background:linear-gradient(135deg,#FFF8E1,#FFF3C4);border:3px solid #FFB300;border-radius:8px 20px 20px 20px;padding:16px 20px;margin-bottom:14px;min-height:70px;box-shadow:0 4px 16px rgba(255,179,0,0.3)}
+.speech-label{font-family:'Fredoka One',cursive;font-size:12px;color:#FF8F00;margin-bottom:6px}
+.speech-text{font-size:clamp(14px,2.2vw,17px);color:#3E2723;font-weight:700;line-height:1.7}
+
+/* ── ACTIVITY CARD ── */
+.activity-card{background:rgba(255,255,255,0.95);border-radius:20px;padding:20px;box-shadow:0 8px 32px rgba(255,179,0,0.15);margin-bottom:14px}
+.activity-title{font-family:'Fredoka One',cursive;font-size:clamp(15px,2.8vw,22px);color:#E65100;margin-bottom:16px;text-align:center;padding:8px 16px;background:linear-gradient(135deg,#FFF3E0,#FFE0B2);border-radius:12px}
+
+/* ── SUM ROWS ── */
+.sum-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:10px 12px;background:linear-gradient(135deg,#FFF8E1,#FFE082);border-radius:14px;transition:background 0.3s;justify-content:center;flex-wrap:wrap}
+.sum-row.correct-row{background:linear-gradient(135deg,#E8F5E9,#C8E6C9)}
+.sum-row.wrong-row{background:linear-gradient(135deg,#FFEBEE,#FFCDD2)}
+.sum-num{font-family:'Fredoka One',cursive;font-size:clamp(26px,5.5vw,38px);color:#E65100;min-width:30px;text-align:center}
+.sum-op{font-family:'Fredoka One',cursive;font-size:clamp(22px,4.5vw,32px);color:#43A047}
+.sum-eq{font-family:'Fredoka One',cursive;font-size:clamp(22px,4.5vw,32px);color:#5D4037}
+.sum-input{width:clamp(50px,13vw,68px);height:clamp(50px,13vw,68px);border:3px dashed #FFB300;border-radius:14px;font-family:'Fredoka One',cursive;font-size:clamp(24px,5vw,34px);text-align:center;color:#E65100;background:white;outline:none;transition:all 0.3s}
+.sum-input:focus{border-color:#FF6F00;background:#FFF8E1;transform:scale(1.05)}
+.sum-input.correct{border-color:#43A047;background:#E8F5E9;color:#2E7D32;border-style:solid}
+.sum-input.wrong{border-color:#E53935;background:#FFEBEE;color:#C62828;border-style:solid;animation:shake 0.4s ease}
+.sum-input::-webkit-outer-spin-button,.sum-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.sum-input[type=number]{-moz-appearance:textfield}
+.sum-input:disabled{opacity:0.9}
+@keyframes shake{0%{transform:translateX(0)}25%{transform:translateX(-5px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}100%{transform:translateX(0)}}
+
+.go-btn{width:clamp(42px,10vw,52px);height:clamp(42px,10vw,52px);border:none;border-radius:12px;background:linear-gradient(135deg,#43A047,#66BB6A);color:white;font-family:'Fredoka One',cursive;font-size:clamp(14px,3vw,18px);cursor:pointer;box-shadow:0 3px 10px rgba(67,160,71,0.3);transition:transform 0.15s;flex-shrink:0}
+.go-btn:hover{transform:scale(1.08)}
+.go-btn:disabled{opacity:0.3;cursor:default;transform:none}
+
+/* ── SEQUENCE ROWS ── */
+.seq-section{margin-bottom:18px;padding:14px;background:linear-gradient(135deg,#FFF8E1,#FFE082);border-radius:16px}
+.seq-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:8px}
+.seq-cell{width:clamp(36px,9vw,48px);height:clamp(36px,9vw,48px);border-radius:10px;font-family:'Fredoka One',cursive;font-size:clamp(16px,3.5vw,24px);display:flex;align-items:center;justify-content:center}
+.seq-given{background:#FFB300;color:white;box-shadow:0 2px 8px rgba(255,179,0,0.3)}
+.seq-blank{border:2px dashed #FF8F00;background:white;color:#E65100}
+.seq-blank input{width:100%;height:100%;border:none;background:transparent;font-family:'Fredoka One',cursive;font-size:clamp(14px,3vw,20px);text-align:center;color:#E65100;outline:none}
+.seq-blank.correct{border-color:#43A047;background:#E8F5E9;border-style:solid}
+.seq-blank.correct input{color:#2E7D32}
+.seq-blank.wrong{border-color:#E53935;background:#FFEBEE;border-style:solid}
+.seq-blank.wrong input{color:#C62828}
+.seq-arrow{font-size:clamp(12px,2vw,16px);color:#FF8F00;font-weight:900}
+.check-btn{display:block;margin:12px auto 0;padding:10px 32px;border:none;border-radius:50px;font-family:'Fredoka One',cursive;font-size:clamp(14px,2.5vw,18px);color:white;cursor:pointer;background:linear-gradient(135deg,#43A047,#66BB6A);box-shadow:0 4px 16px rgba(67,160,71,0.4);transition:transform 0.2s}
+.check-btn:hover{transform:scale(1.05)}
+.check-btn:disabled{opacity:0.4;cursor:default;transform:none}
+.oops-msg{font-family:'Fredoka One',cursive;font-size:11px;color:#C62828;text-align:center;margin-top:4px;min-height:16px}
+
+/* ── RESULTS ── */
+.results-card{background:rgba(255,255,255,0.97);border-radius:20px;padding:24px;box-shadow:0 8px 32px rgba(255,179,0,0.15);text-align:center}
+.results-card h2{font-family:'Fredoka One',cursive;font-size:clamp(20px,4vw,28px);color:#E65100;margin-bottom:12px}
+.score-display{font-family:'Fredoka One',cursive;font-size:clamp(36px,8vw,56px);color:#2E7D32;margin:16px 0}
+.results-detail{text-align:left;margin:16px 0;font-size:clamp(13px,2vw,16px);font-weight:700;color:#4E342E;line-height:1.8}
+.result-correct{color:#2E7D32}
+.result-wrong{color:#C62828}
+
+/* ── FEEDBACK ── */
+.feedback-card{background:rgba(255,255,255,0.97);border-radius:20px;padding:24px;box-shadow:0 8px 32px rgba(255,179,0,0.15);margin-top:14px}
+.feedback-card h3{font-family:'Fredoka One',cursive;color:#E65100;font-size:18px;margin-bottom:14px;text-align:center}
+.fb-submit{display:block;margin:16px auto 0;padding:12px 40px;border:none;border-radius:50px;font-family:'Fredoka One',cursive;font-size:16px;color:white;cursor:pointer;background:linear-gradient(135deg,#FF8F00,#FFB300);box-shadow:0 4px 16px rgba(255,179,0,0.4);transition:transform 0.2s}
+.fb-submit:hover{transform:scale(1.05)}
+
+/* ── START ── */
+.start-screen{text-align:center;padding:20px}
+.start-btn{display:inline-block;margin-top:16px;padding:16px 48px;border:none;border-radius:50px;font-family:'Fredoka One',cursive;font-size:clamp(18px,3.5vw,24px);color:white;cursor:pointer;background:linear-gradient(135deg,#FF8F00,#FFB300);box-shadow:0 6px 24px rgba(255,143,0,0.5);transition:transform 0.2s;animation:pulse 2s ease-in-out infinite}
+.start-btn:hover{transform:scale(1.08)}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+
+.scene{display:none}
+.scene.active{display:block}
+.confetti-wrap{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;overflow:hidden}
+@keyframes confFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(105vh) rotate(720deg);opacity:0}}
+</style>
+</head>
+<body>
+
+<div class="float-deco" style="top:6%;left:4%;animation-delay:0s">🎵</div>
+<div class="float-deco" style="top:20%;right:7%;animation-delay:2s">🌻</div>
+<div class="float-deco" style="top:42%;left:3%;animation-delay:4s">🎈</div>
+<div class="float-deco" style="top:62%;right:5%;animation-delay:6s">✏️</div>
+<div class="float-deco" style="top:78%;left:9%;animation-delay:8s">🏆</div>
+<div class="float-deco" style="top:30%;right:11%;animation-delay:10s">📚</div>
+
+<!-- PASSWORD -->
+<div id="passwordScreen">
+  <div class="pw-card">
+    <div style="font-size:48px;margin-bottom:10px">🔒</div>
+    <h2>Akili Learning</h2>
+    <p>Grade 1 - Revision 4</p>
+    <input type="password" class="pw-input" id="pwInput" placeholder="Password" maxlength="20" autocomplete="off">
+    <button class="pw-btn" onclick="checkPassword()">Enter</button>
+    <div class="pw-error" id="pwError"></div>
+  </div>
+</div>
+
+<div id="app">
+  <div class="header">
+    <h1>Revision with Mr. Plus!</h1>
+    <p>Plus sums & Counting in 1's</p>
+  </div>
+
+  <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+
+  <div class="speech-area">
+    <div class="speech-label">Mr. Plus says:</div>
+    <div class="speech-text" id="speechText">Getting ready...</div>
+  </div>
+
+  <!-- START -->
+  <div class="scene active" id="scene-start">
+    <div class="activity-card start-screen">
+      <div style="font-size:48px;margin-bottom:12px">➕📝</div>
+      <h2 style="font-family:'Fredoka One',cursive;color:#E65100;font-size:clamp(18px,3.5vw,24px)">Let's do revision!</h2>
+      <p style="font-weight:700;color:#5D4037;margin-top:10px;font-size:clamp(13px,2.2vw,16px);line-height:1.6">
+        Plus sums and counting in 1's.<br>
+        Mummy or Daddy, please sit with your child.
+      </p>
+      <button class="start-btn" onclick="beginLesson()">Let's Start!</button>
+    </div>
+  </div>
+
+  <!-- SUMS -->
+  <div class="scene" id="scene-sums">
+    <div class="activity-card">
+      <div class="activity-title">Plus Sums</div>
+      <div id="sumRows"></div>
+    </div>
+  </div>
+
+  <!-- SEQUENCES -->
+  <div class="scene" id="scene-seq">
+    <div class="activity-card">
+      <div class="activity-title">Fill in the missing numbers</div>
+      <p style="text-align:center;font-weight:700;color:#5D4037;margin-bottom:14px;font-size:clamp(11px,2vw,14px)">
+        Look carefully: are the numbers getting bigger or smaller?
+      </p>
+      <div id="seqArea"></div>
+      <button onclick="forceShowResults()" style="display:block;margin:20px auto 0;padding:10px 24px;border:none;border-radius:50px;font-family:'Fredoka One',cursive;font-size:14px;color:white;cursor:pointer;background:#9E9E9E;box-shadow:0 3px 10px rgba(0,0,0,0.15)">See Results (when done)</button>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="scene" id="scene-results">
+    <div class="results-card">
+      <h2>Well done! You finished!</h2>
+      <div class="score-display" id="scoreDisplay"></div>
+      <div class="results-detail" id="resultsDetail"></div>
+      <div id="parentMessage" style="margin-top:18px;padding:16px;background:#FFF8E1;border-radius:14px;border:2px solid #FFB300;text-align:left;font-size:clamp(12px,2vw,15px);font-weight:700;color:#5D4037;line-height:1.7"></div>
+    </div>
+    <div class="feedback-card">
+      <h3>Please Complete the Feedback Form</h3>
+      <p style="text-align:center;font-weight:700;color:#5D4037;font-size:14px;line-height:1.6;margin-bottom:16px">Your feedback helps us improve Akili Learning.</p>
+      <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSemC5qB2ZsXff2tgfoZMYzE0MfcZwiUQNfiY0gveCGDHvD_RA/viewform?embedded=true" width="100%" height="800" frameborder="0" marginheight="0" marginwidth="0" style="border-radius:12px;background:white">Loading…</iframe>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// PASSWORD & FEEDBACK
+// ══════════════════════════════════════════════════════
+const MONTHLY_PASSWORD = "bprev4";
+function checkPassword(){
+  const v = document.getElementById('pwInput').value.trim().toLowerCase();
+  if(v === MONTHLY_PASSWORD){
+    document.getElementById('passwordScreen').style.display='none';
+    document.getElementById('app').style.display='block';
+    initAfterPassword();
+  } else {
+    document.getElementById('pwError').textContent='Incorrect password. Please try again.';
+    document.getElementById('pwInput').value='';
+    document.getElementById('pwInput').focus();
+  }
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('pwInput').addEventListener('keydown',e=>{if(e.key==='Enter')checkPassword();});
+  document.getElementById('pwInput').focus();
+});
+
+const FEEDBACK_FORM_URL="https://docs.google.com/forms/d/e/1FAIpQLSemC5qB2ZsXff2tgfoZMYzE0MfcZwiUQNfiY0gveCGDHvD_RA/viewform";
+function openFeedbackForm(){window.open(FEEDBACK_FORM_URL,'_blank');}
+
+// Sequence completion tracking (declared early so forceShowResults can access)
+let seqResolves={};
+let seqCompleted={};
+
+// Manual escape hatch — parent can click "See Results" at any time
+function forceShowResults(){
+  try { speechSynthesis.cancel(); } catch(e){}
+  // Resolve any pending seq waits so the lesson loop can finish
+  Object.keys(seqResolves||{}).forEach(k=>{
+    if(seqResolves[k]){ try{seqResolves[k]();}catch(e){} seqResolves[k]=null; }
+  });
+  setProgress(100);
+  showScene('results');
+  showResults();
+}
+
+// ══════════════════════════════════════════════════════
+// SPEECH - HEAVY MALE VOICE (Mr. Plus)
+// ══════════════════════════════════════════════════════
+let voices=[], selectedVoice=null;
+function loadVoices(){
+  return new Promise(resolve=>{
+    const load=()=>{
+      voices=speechSynthesis.getVoices();
+      // Prefer deeper, heavier male English voices
+      const prefs=[
+        v=>/google.*uk english male/i.test(v.name),
+        v=>/microsoft.*george/i.test(v.name),
+        v=>/microsoft.*david/i.test(v.name),
+        v=>/microsoft.*mark/i.test(v.name),
+        v=>/microsoft.*james/i.test(v.name),
+        v=>/microsoft.*ryan/i.test(v.name),
+        v=>/google.*us english/i.test(v.name) && !/female/i.test(v.name),
+        v=>/daniel/i.test(v.name) && /en/i.test(v.lang),
+        v=>/george/i.test(v.name),
+        v=>/james/i.test(v.name),
+        v=>/david/i.test(v.name),
+        v=>/mark/i.test(v.name),
+        v=>/fred/i.test(v.name),
+        v=>/male/i.test(v.name) && /en/i.test(v.lang),
+        v=>/en[-_](gb|us|za|au)/i.test(v.lang),
+        v=>/en/i.test(v.lang)
+      ];
+      for(const fn of prefs){const f=voices.find(fn);if(f){selectedVoice=f;break;}}
+      resolve();
+    };
+    if(speechSynthesis.getVoices().length) load();
+    else speechSynthesis.onvoiceschanged=load;
+    setTimeout(resolve,2000);
+  });
+}
+
+function speak(text,rate=0.85){
+  return new Promise(resolve=>{
+    // Wait for any current speech to fully finish before starting new
+    if(speechSynthesis.speaking || speechSynthesis.pending){
+      speechSynthesis.cancel();
+    }
+    let resolved=false;
+    const finish=()=>{if(!resolved){resolved=true;clearInterval(k);clearTimeout(maxT);setTimeout(resolve,300);}};
+    // Hard maximum timeout based on text length — guarantees lesson never hangs
+    // Allow ~120ms per character + 3s base, capped at 30s
+    const maxMs=Math.min(30000, 3000 + text.length*120);
+    const maxT=setTimeout(finish, maxMs);
+    let k=null;
+    // Longer delay to prevent glitches/overlap at start
+    setTimeout(()=>{
+      try {
+        const u=new SpeechSynthesisUtterance(text);
+        if(selectedVoice)u.voice=selectedVoice;
+        u.rate=rate; u.pitch=0.7; u.volume=1; // Lower pitch = heavier voice
+        k=setInterval(()=>{if(!speechSynthesis.speaking){clearInterval(k);return;}speechSynthesis.pause();speechSynthesis.resume();},5000);
+        u.onend=finish;
+        u.onerror=finish;
+        speechSynthesis.speak(u);
+      } catch(e){
+        finish();
+      }
+    },250);
+  });
+}
+
+function setBubble(t){document.getElementById('speechText').textContent=t;}
+async function sayAndShow(t,r=0.85){setBubble(t);await speak(t,r);}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+function setProgress(p){document.getElementById('progressBar').style.width=p+'%';}
+function showScene(id){document.querySelectorAll('.scene').forEach(s=>s.classList.remove('active'));document.getElementById('scene-'+id).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
+
+// ══════════════════════════════════════════════════════
+// SOUNDS
+// ══════════════════════════════════════════════════════
+const AudioCtx=window.AudioContext||window.webkitAudioContext;
+let audioCtx;
+function initAudio(){if(!audioCtx)audioCtx=new AudioCtx();}
+function playDing(){
+  if(!audioCtx)return;
+  const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+  o.connect(g);g.connect(audioCtx.destination);
+  o.frequency.setValueAtTime(880,audioCtx.currentTime);
+  o.frequency.exponentialRampToValueAtTime(1320,audioCtx.currentTime+0.1);
+  g.gain.setValueAtTime(0.3,audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.4);
+  o.start();o.stop(audioCtx.currentTime+0.4);
+}
+function playBuzz(){
+  if(!audioCtx)return;
+  const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+  o.connect(g);g.connect(audioCtx.destination);o.type='square';
+  o.frequency.setValueAtTime(180,audioCtx.currentTime);
+  g.gain.setValueAtTime(0.2,audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.3);
+  o.start();o.stop(audioCtx.currentTime+0.3);
+}
+function playTada(){
+  if(!audioCtx)return;
+  [523,659,784,1047].forEach((f,i)=>{
+    const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+    o.connect(g);g.connect(audioCtx.destination);o.frequency.value=f;
+    g.gain.setValueAtTime(0,audioCtx.currentTime+i*0.12);
+    g.gain.linearRampToValueAtTime(0.25,audioCtx.currentTime+i*0.12+0.05);
+    g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+i*0.12+0.5);
+    o.start(audioCtx.currentTime+i*0.12);o.stop(audioCtx.currentTime+i*0.12+0.5);
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════════════
+const SUMS=[
+  {a:2,b:3,ans:5},{a:4,b:2,ans:6},{a:5,b:3,ans:8},{a:4,b:5,ans:9},{a:1,b:7,ans:8},
+  {a:3,b:3,ans:6},{a:8,b:2,ans:10},{a:3,b:1,ans:4},{a:6,b:0,ans:6},{a:1,b:2,ans:3}
+];
+
+const SEQS=[
+  {full:[5,6,7,8,9,10,11,12,13], given:[0,1,4,7]},       // 5,6,__,__,9,__,__,12,__
+  {full:[7,8,9,10,11,12,13,14], given:[1,2,7]},            // __,8,9,__,__,__,__,14
+  {full:[9,8,7,6,5,4,3,2], given:[0,1,4]},                 // 9,8,__,__,5,__,__,__
+  {full:[4,5,6,7,8,9,10,11], given:[2,3,6]},               // __,__,6,7,__,__,10,__
+  {full:[16,15,14,13,12,11,10,9,8], given:[0,1,3,7]}       // 16,15,__,13,__,__,__,9,__
+];
+
+let sumResults=[];
+let seqResults=[];
+let totalCorrect=0;
+let totalQuestions=0; // calculated later
+
+// ══════════════════════════════════════════════════════
+// BUILD SUMS
+// ══════════════════════════════════════════════════════
+function buildSumRows(){
+  const c=document.getElementById('sumRows');c.innerHTML='';
+  SUMS.forEach((s,i)=>{
+    const row=document.createElement('div');row.className='sum-row';row.id='sum-row-'+i;
+    row.innerHTML=`
+      <span class="sum-num">${s.a}</span>
+      <span class="sum-op">+</span>
+      <span class="sum-num">${s.b}</span>
+      <span class="sum-eq">=</span>
+      <input type="text" class="sum-input" id="sum-input-${i}" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off">
+      <button class="go-btn" id="sum-go-${i}">Go</button>
+    `;
+    c.appendChild(row);
+  });
+}
+
+function handleSum(i){
+  return new Promise(resolve=>{
+    const input=document.getElementById('sum-input-'+i);
+    const row=document.getElementById('sum-row-'+i);
+    const goBtn=document.getElementById('sum-go-'+i);
+    let done=false;
+    const submit=()=>{
+      if(done)return;
+      const val=input.value.trim();
+      if(val==='')return;
+      done=true;
+      goBtn.disabled=true;
+      input.disabled=true;
+      const num=parseInt(val);
+      const correct=num===SUMS[i].ans;
+      sumResults.push({a:SUMS[i].a,b:SUMS[i].b,ans:SUMS[i].ans,given:num,correct});
+      if(correct){
+        input.classList.add('correct');row.classList.add('correct-row');
+        playDing();totalCorrect++;
+      } else {
+        input.classList.add('wrong');row.classList.add('wrong-row');
+        playBuzz();
+      }
+      setTimeout(()=>resolve(correct),500);
+    };
+    input.addEventListener('keydown',e=>{if(e.key==='Enter')submit();});
+    goBtn.addEventListener('click',submit);
+    input.addEventListener('input',()=>{
+      if(done)return;
+      const val=input.value.trim();
+      if(val==='')return;
+      setTimeout(()=>{if(!done)submit();},1200);
+    });
+    input.focus();
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// BUILD SEQUENCES
+// ══════════════════════════════════════════════════════
+function buildSeqArea(){
+  const area=document.getElementById('seqArea');area.innerHTML='';
+  SEQS.forEach((seq,si)=>{
+    const section=document.createElement('div');section.className='seq-section';section.id='seq-section-'+si;
+    // Determine direction
+    const dir=seq.full[1]>seq.full[0]?'counting on':'counting back';
+    let rowHTML='<div class="seq-row">';
+    seq.full.forEach((num,ni)=>{
+      if(ni>0) rowHTML+='<span class="seq-arrow">,</span>';
+      if(seq.given.includes(ni)){
+        rowHTML+=`<div class="seq-cell seq-given">${num}</div>`;
+      } else {
+        rowHTML+=`<div class="seq-cell seq-blank" id="seq-cell-${si}-${ni}"><input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" id="seq-in-${si}-${ni}" data-ans="${num}" autocomplete="off"></div>`;
+      }
+    });
+    rowHTML+='</div>';
+    // Count blanks
+    const blankCount=seq.full.length-seq.given.length;
+    section.innerHTML=rowHTML+`<button class="check-btn" id="seq-check-${si}" onclick="checkSeq(${si})">Check</button><div class="oops-msg" id="seq-msg-${si}"></div>`;
+    area.appendChild(section);
+  });
+}
+
+function checkSeq(si){
+  const seq=SEQS[si];
+  const btn=document.getElementById('seq-check-'+si);
+  const msg=document.getElementById('seq-msg-'+si);
+  btn.disabled=true;
+  let allCorrect=true;
+  seq.full.forEach((num,ni)=>{
+    if(!seq.given.includes(ni)){
+      const input=document.getElementById('seq-in-'+si+'-'+ni);
+      const cell=document.getElementById('seq-cell-'+si+'-'+ni);
+      const val=parseInt(input.value.trim());
+      input.disabled=true;
+      if(val===num){
+        cell.classList.add('correct');
+        playDing();
+        totalCorrect++;
+        seqResults.push({seq:si,pos:ni,ans:num,given:val,correct:true});
+      } else {
+        cell.classList.add('wrong');
+        input.value=num; // show correct answer
+        allCorrect=false;
+        seqResults.push({seq:si,pos:ni,ans:num,given:val||'empty',correct:false});
+      }
+    }
+  });
+  if(!allCorrect){
+    playBuzz();
+    msg.textContent="Oops, count carefully next time!";
+  } else {
+    playDing();
+    msg.textContent="";
+  }
+  // Mark this row as completed
+  seqCompleted[si]=true;
+  // Resolve if waiting
+  if(seqResolves[si]){
+    seqResolves[si]();
+    seqResolves[si]=null;
+  }
+}
+
+let seqResolves_unused_1; // moved to top
+function waitForSeqCheck(si){
+  return new Promise(resolve=>{
+    // If row was already completed before await ran, resolve immediately
+    if(seqCompleted[si]){
+      resolve();
+      return;
+    }
+    seqResolves[si]=resolve;
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// MAIN LESSON FLOW
+// ══════════════════════════════════════════════════════
+async function beginLesson(){
+  try {
+    initAudio();
+    await loadVoices();
+
+  // Count total questions
+  let seqBlanks=0;
+  SEQS.forEach(s=>seqBlanks+=s.full.length-s.given.length);
+  totalQuestions=SUMS.length+seqBlanks;
+
+  // ─── MR PLUS INTRO ───
+  await sayAndShow("Hello, boys and girls. Remember me? I am Mr. Plus. Are you ready to do revision?");
+  await sleep(1000);
+
+  await sayAndShow("Mummy or Daddy can sit with you and make sure that you understand what to do. Before you start your activities, tell Mum or Dad what you are going to do to get to your answer.");
+  await sleep(1200);
+
+  await sayAndShow("Mum or Dad, please help your child to read the instructions. Let's start!");
+  await sleep(800);
+
+  // ═══ ACTIVITY 1: PLUS SUMS ═══
+  setProgress(5);
+  showScene('sums');
+  buildSumRows();
+  await sleep(400);
+
+  await sayAndShow("Here are your plus sums! Look at each sum carefully. Work out the answer and type it in the box. Then press the Go button. You only get one chance, so count carefully!");
+  await sleep(800);
+
+  await sayAndShow("Mum or Dad, please help your child to read the sum. Let your child use their fingers or count on to find the answer.");
+  await sleep(600);
+
+  for(let i=0;i<SUMS.length;i++){
+    if(i>0) await sleep(200);
+    setBubble(`What is ${SUMS[i].a} plus ${SUMS[i].b}? Type your answer!`);
+    await handleSum(i);
+    const pct=5+Math.round(((i+1)/SUMS.length)*45);
+    setProgress(pct);
+  }
+
+  await sayAndShow("Well done!");
+  await sleep(800);
+
+  // ═══ ACTIVITY 2: FILL IN MISSING NUMBERS ═══
+  setProgress(55);
+  showScene('seq');
+  buildSeqArea();
+  await sleep(400);
+
+  await sayAndShow("Now we are going to fill in the missing numbers. Look at the number line carefully.");
+  await sleep(800);
+
+  await sayAndShow("Remember to look if the numbers are getting bigger. Then we count on. If the numbers are getting smaller, we will count back.");
+  await sleep(1200);
+
+  await sayAndShow("Type the missing numbers in the boxes. When you have filled in all the boxes in a row, press the Check button. You only get one chance, so count carefully!");
+  await sleep(800);
+
+  await sayAndShow("Mum or Dad, please help your child to read the numbers and work out which direction they are counting. Let's go!");
+  await sleep(500);
+
+  for(let si=0;si<SEQS.length;si++){
+    const dir=SEQS[si].full[1]>SEQS[si].full[0]?'counting on':'counting back';
+    setBubble(`Row ${si+1}: Look at the numbers. Are they getting bigger or smaller? Fill in the blanks and press Check!`);
+    await waitForSeqCheck(si);
+    const pct=55+Math.round(((si+1)/SEQS.length)*40);
+    setProgress(pct);
+    if(si<SEQS.length-1) await sleep(400);
+  }
+
+  await sayAndShow("You have finished all the activities! Let's see how you did!");
+  await sleep(600);
+
+  // ═══ RESULTS ═══
+  setProgress(100);
+  showScene('results');
+  showResults();
+  playTada();
+  launchConfetti();
+
+  await sleep(1500);
+
+  const wrongCount=sumResults.filter(r=>!r.correct).length+seqResults.filter(r=>!r.correct).length;
+  if(wrongCount>0){
+    await sayAndShow("Mummy or Daddy, please go through the answers that were wrong with your child. Please repeat this activity again during the week to make sure your child can do it with confidence. Thank you for helping your child today!");
+  } else {
+    await sayAndShow("What an amazing job! You got everything right! Mummy or Daddy, please still repeat this activity during the week so your child can practise with confidence. Well done!");
+  }
+  } catch(err) {
+    // Safety net: if anything goes wrong, still show the results so parent can see progress
+    console.error('Lesson error:', err);
+    try {
+      setProgress(100);
+      showScene('results');
+      showResults();
+    } catch(e){ console.error('Results error:', e); }
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// RESULTS
+// ══════════════════════════════════════════════════════
+function showResults(){
+  // Recompute totals directly from results arrays for accuracy
+  const sumCorrect = sumResults.filter(r=>r.correct).length;
+  const seqCorrect = seqResults.filter(r=>r.correct).length;
+  const totalCorr = sumCorrect + seqCorrect;
+  const totalQs = sumResults.length + seqResults.length;
+  const pct = totalQs > 0 ? Math.round((totalCorr/totalQs)*100) : 0;
+  document.getElementById('scoreDisplay').textContent=`${totalCorr} / ${totalQs} (${pct}%)`;
+
+  let html='<p style="font-family:Fredoka One,cursive;color:#E65100;margin-top:8px">Plus sums:</p>';
+  sumResults.forEach(r=>{
+    const cls=r.correct?'result-correct':'result-wrong';
+    const icon=r.correct?'✅':'❌';
+    html+=`<p class="${cls}">${icon} ${r.a} + ${r.b} = your answer: ${r.given} ${r.correct?'(Correct!)':`(Wrong — correct answer: ${r.ans})`}</p>`;
+  });
+
+  html+='<p style="font-family:Fredoka One,cursive;color:#E65100;margin-top:14px">Fill in missing numbers:</p>';
+  // Group by sequence
+  for(let si=0;si<SEQS.length;si++){
+    const seqR=seqResults.filter(r=>r.seq===si);
+    const allCorrect=seqR.every(r=>r.correct);
+    const icon=allCorrect?'✅':'❌';
+    const cls=allCorrect?'result-correct':'result-wrong';
+    const seqStr=SEQS[si].full.join(', ');
+    html+=`<p class="${cls}">${icon} Row ${si+1}: ${seqStr} — ${allCorrect?'All correct!':`Some answers were wrong`}</p>`;
+  }
+
+  document.getElementById('resultsDetail').innerHTML=html;
+
+  const wrong=sumResults.filter(r=>!r.correct).length+seqResults.filter(r=>!r.correct).length;
+  let parentMsg='';
+  if(wrong===0){
+    parentMsg=`<p><strong>Amazing!</strong> Your child got every answer correct!</p>
+    <p style="margin-top:8px"><strong>Dear Parent,</strong> please repeat this activity again during the week so your child can practise with confidence. Regular revision helps children remember what they have learned and builds their self-belief. Well done to both of you!</p>`;
+  } else {
+    parentMsg=`<p><strong>Dear Parent,</strong></p>
+    <p style="margin-top:6px">Please go through the answers marked with ❌ with your child. Talk about each one and practise together.</p>
+    <p style="margin-top:6px"><strong>Please repeat this activity again during the week</strong> to make sure your child can do it with confidence. Counting practice can happen anywhere — counting steps, counting toys, counting fingers!</p>
+    <p style="margin-top:6px">Thank you for supporting your child's learning!</p>`;
+  }
+  document.getElementById('parentMessage').innerHTML=parentMsg;
+}
+
+// ══════════════════════════════════════════════════════
+// CONFETTI
+// ══════════════════════════════════════════════════════
+function launchConfetti(){
+  const cols=['#FF8F00','#66BB6A','#42A5F5','#EF5350','#AB47BC','#FFD54F'];
+  const wrap=document.createElement('div');wrap.className='confetti-wrap';
+  document.body.appendChild(wrap);
+  for(let i=0;i<60;i++){
+    const p=document.createElement('div');p.style.cssText=`
+      position:absolute;left:${Math.random()*100}%;top:-20px;
+      width:${6+Math.random()*10}px;height:${6+Math.random()*10}px;
+      background:${cols[i%cols.length]};border-radius:${Math.random()>.5?'50%':'3px'};
+      animation:confFall ${2+Math.random()*2}s linear ${Math.random()*1.5}s forwards;
+    `;wrap.appendChild(p);
+  }
+  setTimeout(()=>wrap.remove(),5500);
+}
+
+// ══════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════
+async function initAfterPassword(){
+  await loadVoices();
+  setBubble("Hello! Press 'Let's Start' when you are ready!");
+  await speak("Hello! Press Let's Start when you are ready!",0.85);
+}
+</script>
+</body>
+</html>
